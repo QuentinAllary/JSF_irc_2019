@@ -1,0 +1,33 @@
+.site-name {
+  font-family: 'Roboto', cursive;
+  font-size: 18px;
+  font-weight: bold;
+  color: dimgrey;
+}
+
+.items {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: dimgrey;
+}
+
+.nav-item :hover {
+  color: dimgrey;
+  font-weight: bold;
+}
+
+.nav-link {
+  color: dimgrey;
+  font-weight: bold;
+}
+
+.cursor {
+  cursor: pointer;
+}
+
+.navbar {
+  -webkit-box-shadow: 0 8px 6px -6px #999;
+  -moz-box-shadow: 0 8px 6px -6px #999;
+  box-shadow: 0 8px 6px -6px #999;
+}

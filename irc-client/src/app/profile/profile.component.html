@@ -1,0 +1,13 @@
+<div *ngIf="user" class="profile container">
+  <table class="table table-hover">
+    <thead>
+    <tr>
+      <th class="username">{{ user.userName }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td class="list-group-item">Email: {{ user.userMail }}</td>
+    </tbody>
+  </table>
+</div>

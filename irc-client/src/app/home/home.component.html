@@ -1,0 +1,12 @@
+<div class="jumbotron text-center">
+  <h1 class="title">ChatApp</h1>
+  <p class="lead">Welcome to the MEAN Real Time Chat App using Socket.io, MongoDB, Angular And NodeJS!</p>
+  <ng-template #buttons>
+    <a class="login-btn btn button btn-lg" [routerLink]="['/login']">Login</a>
+    <a class="register-btn btn button btn-lg" [routerLink]="['/register']">Register</a>
+  </ng-template>
+  <div *ngIf="userService.loggedIn(); else buttons" class="container">
+    <h4 class="welcome">Welcome, {{ userService.getLoggedInUser().userName }}</h4>
+    <button class="start btn button btn-dark btn-lg" routerLink="/chat">Start Chatting</button>
+  </div>
+</div>

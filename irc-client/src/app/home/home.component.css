@@ -1,0 +1,46 @@
+.jumbotron {
+  margin-top: 100px;
+}
+
+.title {
+  font-family: 'Roboto', cursive;
+}
+
+.lead {
+  margin-top: 30px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.welcome {
+  margin-top: 30px;
+  font-size: 30px;
+  font-family: 'Roboto', cursive;
+}
+
+.btn {
+  width: 150px;
+  height: 45px;
+  margin-top: 30px;
+  margin-left: 10px;
+  margin-right: 10px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+}
+
+.login-btn {
+  color: #ccc9d1;
+  background-color: dimgrey;
+}
+
+.register-btn {
+  color: dimgrey;
+  background-color: #ccc9d1;
+}
+
+.start {
+  width: 150px;
+  height: 45px;
+  color: #ccc9d1;
+  font-weight: bold;
+  background-color: dimgrey;
+}

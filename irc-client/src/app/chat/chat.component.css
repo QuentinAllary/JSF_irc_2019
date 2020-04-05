@@ -1,0 +1,14 @@
+.table {
+  font-family: 'Roboto', sans-serif;
+  width: 500px;
+  margin-top: 50px;
+}
+
+.btn {
+  height: 50px;
+  width: 350px;
+  font-size: 16px;
+  font-weight: bolder;
+  color: #ccc9d1;
+  background-color: dimgrey;
+}

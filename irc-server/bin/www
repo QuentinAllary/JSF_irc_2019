@@ -1,0 +1,180 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+const app = require('../app');
+const debug = require('debug')('irc-server:server');
+const http = require('http');
+const socket = require('socket.io');
+const mongoose = require('mongoose');
+const mongodbURI = 'mongodb+srv://root:1311@irchat-efqkm.mongodb.net/IRChatRoom?retryWrites=true&w=majority';
+ // const mongodbURI = 'mongodb+srv://root:1311@irchat-szkdu.mongodb.net/IRChatRoom?retryWrites=true&w=majority';
+// const mongodbURI = 'mongodb+srv://root:1311@irchat-szkdu.mongodb.net/test?retryWrites=true&w=majority';
+
+const userService = require('../service/core/userService');
+const messageService = require('../service/core/messageService');
+const chatRoomService = require('../service/core/chatRoomService');
+
+/**
+ * Database connection
+ */
+mongoose.connect(
+	mongodbURI,
+	{ useNewUrlParser: true },
+	(error) => {
+		if (error) {
+			console.log('Error during MongoDB connection: ', error.message);
+			process.exit(1); // eslint-disable-line
+		} else {
+			console.log('MongoDB Connection: OK.');
+		}
+	},
+);
+
+/**
+ * Get port from environment and store in Express.
+ */
+const port = normalizePort(process.env.PORT || '3007');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+const server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * Connect socket server
+ */
+console.log('PORT: ' + port);
+const io = socket(server).listen(server);
+
+io.on('connection', (socket) => {
+
+	console.log('new connection made! Woooo!');
+	console.log('ID: ' + socket.id);
+
+	socket.on('joiningRoom', async (data) => {
+		console.log('');
+		console.log('----- * -----');
+		let chatRoom = await chatRoomService.joinChatRoom(data.room);
+		let user = await userService.userJoinedRoom(data.user);
+		let joiningMessage = await messageService.createNewMessage(user.userId, user.userName, chatRoom.chatRoomId, chatRoom.chatRoomName,
+			data.user + ' has joined the room ' + data.room + '.');
+		socket.join(data.room);
+		console.log(data.user + ' has joined the room ' + data.room + '.');
+		chatRoom.chatRoomMessages.push(joiningMessage.newMessage);
+		chatRoomService.updateChatRoom(chatRoom.chatRoomId, chatRoom.chatRoomName, chatRoom.chatRoomMessages);
+		socket.broadcast.to(data.room).emit('newUserJoinedChatRoom', {user: data.user, message: 'has joined this room!'});
+		console.log('----- * -----');
+		console.log('');
+	});
+
+	socket.on('join', async (data) => {
+		console.log('');
+		console.log('----- * -----');
+
+		socket.join(data.room);
+		console.log(data.user + ' has joined the room ' + data.room + '.');
+		socket.broadcast.to(data.room).emit('newUserJoined', { user: data.user, message: data.user + ' is online.' });
+
+		console.log('----- * -----');
+		console.log('');
+	});
+
+	socket.on('leave', (data) => {
+		console.log(data.user + ' has left the room ' + data.room + '.');
+		socket.broadcast.to(data.room).emit('userLeftRoom', { user: data.user, message: 'has left this room!' });
+		socket.leave(data.room);
+	});
+
+	socket.on('newMessage', async (data) => {
+		console.log('');
+		console.log('----- * -----');
+		console.log('NEW MESSAGE FROM: [ ' + data.room + ' ] TO [ ' + data.user + ' ] - [ ' + data.message + ' ].');
+
+		let chatRoom = await chatRoomService.joinChatRoom(data.room);
+		let user = await userService.userJoinedRoom(data.user);
+		let msg = await messageService.createNewMessage(user.userId, user.userName, chatRoom.chatRoomId, chatRoom.chatRoomName, data.message);
+		chatRoom.chatRoomMessages.push(msg.newMessage);
+		chatRoomService.updateChatRoom(chatRoom.chatRoomId, chatRoom.chatRoomName, chatRoom.chatRoomMessages);
+
+		io.in(data.room).emit('newMessageReceived', {user: data.user, message: data.message});
+
+		console.log('----- * -----');
+		console.log('');
+	});
+
+	socket.on('typing', (data) => {
+		socket.broadcast.in(data.room).emit('isTyping', { data: data, isTyping: true });
+	});
+});
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+	let port = parseInt(val, 10);
+
+	if (isNaN(port)) {
+		// named pipe
+		return val;
+	}
+
+	if (port >= 0) {
+		// port number
+		return port;
+	}
+
+	return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+	if (error.syscall !== 'listen') {
+		throw error;
+	}
+
+	let bind = typeof port === 'string'
+		? 'Pipe ' + port
+		: 'Port ' + port;
+
+	// handle specific listen errors with friendly messages
+	switch (error.code) {
+		case 'EACCES':
+			console.error(bind + ' requires elevated privileges');
+			process.exit(1);
+			break;
+		case 'EADDRINUSE':
+			console.error(bind + ' is already in use');
+			process.exit(1);
+			break;
+		default:
+			throw error;
+	}
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+	let addr = server.address();
+	let bind = typeof addr === 'string'
+		? 'pipe ' + addr
+		: 'port ' + addr.port;
+	debug('Listening on ' + bind);
+}
